@@ -98,7 +98,7 @@
 				<dependency>
 					<groupId>xerces</groupId>
 					<artifactId>xercesImpl</artifactId>
-					<scope>test</scope>
+					<scope>provided</scope>
 				</dependency>
 			</dependencies>
 			<dependencyManagement>
@@ -286,7 +286,6 @@
 				<dependency>
 					<groupId>org.slf4j</groupId>
 					<artifactId>slf4j-simple</artifactId>
-					<version>1.7.6</version>
 					<scope>test</scope>
 				</dependency>
 				<dependency>
