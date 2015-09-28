@@ -12,6 +12,7 @@
  */
 package org.activiti.engine.impl;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -53,8 +54,8 @@ import org.activiti.engine.runtime.ExecutionQuery;
 import org.activiti.engine.runtime.NativeExecutionQuery;
 import org.activiti.engine.runtime.NativeProcessInstanceQuery;
 import org.activiti.engine.runtime.ProcessInstance;
-import org.activiti.engine.runtime.ProcessInstanceQuery;
 import org.activiti.engine.runtime.ProcessInstanceBuilder;
+import org.activiti.engine.runtime.ProcessInstanceQuery;
 import org.activiti.engine.task.Event;
 import org.activiti.engine.task.IdentityLink;
 import org.activiti.engine.task.IdentityLinkType;
@@ -63,9 +64,11 @@ import org.activiti.engine.task.IdentityLinkType;
  * @author Tom Baeyens
  * @author Daniel Meyer
  */
-public class RuntimeServiceImpl extends ServiceImpl implements RuntimeService {
+public class RuntimeServiceImpl extends ServiceImpl implements RuntimeService, Serializable {
   
-  public ProcessInstance startProcessInstanceByKey(String processDefinitionKey) {
+	private static final long serialVersionUID = -4106907706083489944L;
+
+public ProcessInstance startProcessInstanceByKey(String processDefinitionKey) {
     return commandExecutor.execute(new StartProcessInstanceCmd<ProcessInstance>(processDefinitionKey, null, null, null));
   }
 

@@ -13,6 +13,7 @@
 
 package org.activiti.cdi;
 
+import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -49,6 +50,7 @@ public class CurrentProcessInstance {
   /* Makes the current ProcessInstance available for injection */
   @Produces
   @Named
+  @Any
   public ProcessInstance getProcessInstance() {
     return businessProcess.getProcessInstance();
   }
