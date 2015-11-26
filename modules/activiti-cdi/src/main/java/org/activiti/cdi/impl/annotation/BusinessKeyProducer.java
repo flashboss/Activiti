@@ -12,7 +12,6 @@
  */
 package org.activiti.cdi.impl.annotation;
 
-import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Produces;
 import javax.inject.Named;
 
@@ -29,7 +28,6 @@ public class BusinessKeyProducer {
   @Produces
   @Named
   @BusinessKey
-  @Any
   public String businessKey(ProcessInstance processInstance) {
     return processInstance.getBusinessKey();
   }

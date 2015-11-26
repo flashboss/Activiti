@@ -14,7 +14,6 @@
 package org.activiti.cdi.impl.util;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Produces;
 import javax.inject.Named;
 
@@ -44,7 +43,7 @@ public class ActivitiServices {
 
   @Produces @Named @ApplicationScoped public ProcessEngine processEngine() { return processEngine; }
 
-  @Produces @Named @ApplicationScoped @Any public RuntimeService runtimeService() { return processEngine().getRuntimeService(); }
+  @Produces @Named @ApplicationScoped public RuntimeService runtimeService() { return processEngine().getRuntimeService(); }
 
   @Produces @Named @ApplicationScoped public TaskService taskService() { return processEngine().getTaskService(); }
 
