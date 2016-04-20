@@ -12,6 +12,11 @@
  */
 package org.activiti.cdi.test;
 
+import static java.lang.Thread.currentThread;
+import static java.lang.Thread.sleep;
+import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
+import static org.slf4j.LoggerFactory.getLogger;
+
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Callable;
@@ -36,13 +41,11 @@ import org.activiti.engine.impl.jobexecutor.JobExecutor;
 import org.activiti.engine.test.ActivitiRule;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Abstract base class for executing activiti-cdi tests in a Java SE
@@ -53,60 +56,11 @@ import org.slf4j.LoggerFactory;
 @RunWith(Arquillian.class)
 public abstract class CdiActivitiTestCase {
 
-	protected Logger logger = LoggerFactory.getLogger(getClass().getName());
+	protected Logger logger = getLogger(getClass().getName());
 
 	@Deployment
 	public static JavaArchive createDeployment() {
-		JavaArchive javaArchive = ShrinkWrap.create(JavaArchive.class).addPackages(true, "org/springframework")
-				.addPackages(true, "org/activiti").addPackages(true, "org/h2").addPackages(true, "org/apache")
-				.addPackages(true, "org/joda")
-				.addAsResource("org/activiti/impl/bpmn/parser/activiti-bpmn-extensions-5.0.xsd")
-				.addAsResource("org/activiti/impl/bpmn/parser/activiti-bpmn-extensions-5.10.xsd")
-				.addAsResource("org/activiti/impl/bpmn/parser/activiti-bpmn-extensions-5.11.xsd")
-				.addAsResource("org/activiti/impl/bpmn/parser/activiti-bpmn-extensions-5.15.xsd")
-				.addAsResource("org/activiti/impl/bpmn/parser/activiti-bpmn-extensions-5.18.xsd")
-				.addAsResource("org/activiti/impl/bpmn/parser/activiti-bpmn-extensions-5.2.xsd")
-				.addAsResource("org/activiti/impl/bpmn/parser/activiti-bpmn-extensions-5.3.xsd")
-				.addAsResource("org/activiti/impl/bpmn/parser/activiti-bpmn-extensions-5.4.xsd")
-				.addAsResource("org/activiti/impl/bpmn/parser/BPMN20.xsd")
-				.addAsResource("org/activiti/impl/bpmn/parser/BPMNDI.xsd")
-				.addAsResource("org/activiti/impl/bpmn/parser/DC.xsd")
-				.addAsResource("org/activiti/impl/bpmn/parser/DI.xsd")
-				.addAsResource("org/activiti/impl/bpmn/parser/Semantic.xsd")
-				.addAsResource("org/activiti/cdi/test/api/annotation/BusinessKeyTest.testBusinessKeyInjectable.bpmn20.xml")
-				.addAsResource("org/activiti/cdi/test/api/annotation/CompleteTaskTest.bpmn20.xml")
-				.addAsResource("org/activiti/cdi/test/api/annotation/ProcessIdTest.testProcessIdInjectable.bpmn20.xml")
-				.addAsResource("org/activiti/cdi/test/api/annotation/StartProcessTest.bpmn20.xml")
-				.addAsResource("org/activiti/cdi/test/api/annotation/TaskIdTest.testTaskIdInjectable.bpmn20.xml")
-				.addAsResource("org/activiti/cdi/test/api/BusinessProcessBeanTest.test.bpmn20.xml")
-				.addAsResource("org/activiti/cdi/test/api/BusinessProcessBeanTest.testProcessWithoutWaitState.bpmn20.xml")
-				.addAsResource("org/activiti/cdi/test/bpmn/SignalEventTests.catchAlertSignalBoundaryWithReceiveTask.bpmn20.xml")
-				.addAsResource("org/activiti/cdi/test/bpmn/SignalEventTests.throwAlertSignalWithDelegate.bpmn20.xml")
-				.addAsResource("org/activiti/cdi/test/impl/context/BusinessProcessContextTest.testChangeProcessScopedBeanProperty.bpmn20.xml")
-				.addAsResource("org/activiti/cdi/test/impl/context/BusinessProcessContextTest.testConversationalBeanStoreFlush.bpmn20.xml")
-				.addAsResource("org/activiti/cdi/test/impl/context/BusinessProcessContextTest.testResolution.bpmn20.xml")
-				.addAsResource("org/activiti/cdi/test/impl/context/ContextScopingTest.testFallbackToRequestContext.bpmn20.xml")
-				.addAsResource("org/activiti/cdi/test/impl/context/ThreadContextAssociationTest.testBusinessProcessScopedWithJobExecutor.bpmn20.xml")
-				.addAsResource("org/activiti/cdi/test/impl/el/ElTest.testInvalidExpression.bpmn20.xml")
-				.addAsResource("org/activiti/cdi/test/impl/el/ElTest.testSetBeanProperty.bpmn20.xml")
-				.addAsResource("org/activiti/cdi/test/impl/event/EventNotificationTest.process1.bpmn20.xml")
-				.addAsResource("org/activiti/cdi/test/impl/event/EventNotificationTest.process2.bpmn20.xml")
-				.addAsResource("org/activiti/cdi/test/impl/event/MultiInstanceServiceTaskEvent.bpmn20.xml")
-				.addAsResource("org/activiti/cdi/test/impl/event/MultiInstanceTaskCompleteEventTest.process1.bpmn20.xml.bpmn")
-				.addAsResource("org/activiti/cdi/test/impl/event/TaskEventNotificationTest.process3.bpmn20.xml")
-				.addAsResource("org/activiti/cdi/test/impl/util/beansWithAlternative.xml")
-
-				
-				.addAsResource("activiti.cfg.xml").addAsResource("log4j.properties")
-				.addAsResource("org/apache/xerces/impl/xpath/regex/message.properties")
-				.addAsResource("org/apache/xerces/impl/msg/XMLSchemaMessages.properties")
-				.addAsResource("org/apache/xerces/impl/msg/XMLMessages.properties")
-				.addAsResource("org/activiti/db/mapping/mappings.xml")
-				.addAsResource("org/activiti/db/create/activiti.h2.create.engine.sql")
-				.addAsResource("org/activiti/db/create/activiti.h2.create.history.sql")
-				.addAsResource("org/activiti/db/create/activiti.h2.create.identity.sql")
-				.addAsManifestResource("META-INF/services/org.activiti.cdi.spi.ProcessEngineLookup",
-						"services/org.activiti.cdi.spi.ProcessEngineLookup")
+		JavaArchive javaArchive = completeDependencies(create(JavaArchive.class))
 				.addAsManifestResource("META-INF/beans.xml", "beans.xml");
 		return javaArchive;
 	}
@@ -173,12 +127,12 @@ public abstract class CdiActivitiTestCase {
 
 		try {
 			Timer timer = new Timer();
-			InteruptTask task = new InteruptTask(Thread.currentThread());
+			InteruptTask task = new InteruptTask(currentThread());
 			timer.schedule(task, maxMillisToWait);
 			boolean areJobsAvailable = true;
 			try {
 				while (areJobsAvailable && !task.isTimeLimitExceeded()) {
-					Thread.sleep(intervalMillis);
+					sleep(intervalMillis);
 					areJobsAvailable = areJobsAvailable();
 				}
 			} catch (InterruptedException e) {
@@ -200,12 +154,12 @@ public abstract class CdiActivitiTestCase {
 
 		try {
 			Timer timer = new Timer();
-			InteruptTask task = new InteruptTask(Thread.currentThread());
+			InteruptTask task = new InteruptTask(currentThread());
 			timer.schedule(task, maxMillisToWait);
 			boolean conditionIsViolated = true;
 			try {
 				while (conditionIsViolated) {
-					Thread.sleep(intervalMillis);
+					sleep(intervalMillis);
 					conditionIsViolated = !condition.call();
 				}
 			} catch (InterruptedException e) {
@@ -243,5 +197,65 @@ public abstract class CdiActivitiTestCase {
 			timeLimitExceeded = true;
 			thread.interrupt();
 		}
+	}
+
+	public static JavaArchive completeDependencies(JavaArchive javaArchive) {
+		return javaArchive.addPackages(true, "org/springframework").addPackages(true, "org/activiti")
+				.addPackages(true, "org/h2").addPackages(true, "org/apache").addPackages(true, "org/joda")
+				.addAsResource("org/activiti/impl/bpmn/parser/activiti-bpmn-extensions-5.0.xsd")
+				.addAsResource("org/activiti/impl/bpmn/parser/activiti-bpmn-extensions-5.10.xsd")
+				.addAsResource("org/activiti/impl/bpmn/parser/activiti-bpmn-extensions-5.11.xsd")
+				.addAsResource("org/activiti/impl/bpmn/parser/activiti-bpmn-extensions-5.15.xsd")
+				.addAsResource("org/activiti/impl/bpmn/parser/activiti-bpmn-extensions-5.18.xsd")
+				.addAsResource("org/activiti/impl/bpmn/parser/activiti-bpmn-extensions-5.2.xsd")
+				.addAsResource("org/activiti/impl/bpmn/parser/activiti-bpmn-extensions-5.3.xsd")
+				.addAsResource("org/activiti/impl/bpmn/parser/activiti-bpmn-extensions-5.4.xsd")
+				.addAsResource("org/activiti/impl/bpmn/parser/BPMN20.xsd")
+				.addAsResource("org/activiti/impl/bpmn/parser/BPMNDI.xsd")
+				.addAsResource("org/activiti/impl/bpmn/parser/DC.xsd")
+				.addAsResource("org/activiti/impl/bpmn/parser/DI.xsd")
+				.addAsResource("org/activiti/impl/bpmn/parser/Semantic.xsd")
+				.addAsResource(
+						"org/activiti/cdi/test/api/annotation/BusinessKeyTest.testBusinessKeyInjectable.bpmn20.xml")
+				.addAsResource("org/activiti/cdi/test/api/annotation/CompleteTaskTest.bpmn20.xml")
+				.addAsResource("org/activiti/cdi/test/api/annotation/ProcessIdTest.testProcessIdInjectable.bpmn20.xml")
+				.addAsResource("org/activiti/cdi/test/api/annotation/StartProcessTest.bpmn20.xml")
+				.addAsResource("org/activiti/cdi/test/api/annotation/TaskIdTest.testTaskIdInjectable.bpmn20.xml")
+				.addAsResource("org/activiti/cdi/test/api/BusinessProcessBeanTest.test.bpmn20.xml")
+				.addAsResource(
+						"org/activiti/cdi/test/api/BusinessProcessBeanTest.testProcessWithoutWaitState.bpmn20.xml")
+				.addAsResource(
+						"org/activiti/cdi/test/bpmn/SignalEventTests.catchAlertSignalBoundaryWithReceiveTask.bpmn20.xml")
+				.addAsResource("org/activiti/cdi/test/bpmn/SignalEventTests.throwAlertSignalWithDelegate.bpmn20.xml")
+				.addAsResource(
+						"org/activiti/cdi/test/impl/context/BusinessProcessContextTest.testChangeProcessScopedBeanProperty.bpmn20.xml")
+				.addAsResource(
+						"org/activiti/cdi/test/impl/context/BusinessProcessContextTest.testConversationalBeanStoreFlush.bpmn20.xml")
+				.addAsResource(
+						"org/activiti/cdi/test/impl/context/BusinessProcessContextTest.testResolution.bpmn20.xml")
+				.addAsResource(
+						"org/activiti/cdi/test/impl/context/ContextScopingTest.testFallbackToRequestContext.bpmn20.xml")
+				.addAsResource(
+						"org/activiti/cdi/test/impl/context/ThreadContextAssociationTest.testBusinessProcessScopedWithJobExecutor.bpmn20.xml")
+				.addAsResource("org/activiti/cdi/test/impl/el/ElTest.testInvalidExpression.bpmn20.xml")
+				.addAsResource("org/activiti/cdi/test/impl/el/ElTest.testSetBeanProperty.bpmn20.xml")
+				.addAsResource("org/activiti/cdi/test/impl/event/EventNotificationTest.process1.bpmn20.xml")
+				.addAsResource("org/activiti/cdi/test/impl/event/EventNotificationTest.process2.bpmn20.xml")
+				.addAsResource("org/activiti/cdi/test/impl/event/MultiInstanceServiceTaskEvent.bpmn20.xml")
+				.addAsResource(
+						"org/activiti/cdi/test/impl/event/MultiInstanceTaskCompleteEventTest.process1.bpmn20.xml.bpmn")
+				.addAsResource("org/activiti/cdi/test/impl/event/TaskEventNotificationTest.process3.bpmn20.xml")
+				.addAsResource("org/activiti/cdi/test/impl/util/beansWithAlternative.xml")
+
+				.addAsResource("activiti.cfg.xml").addAsResource("log4j.properties")
+				.addAsResource("org/apache/xerces/impl/xpath/regex/message.properties")
+				.addAsResource("org/apache/xerces/impl/msg/XMLSchemaMessages.properties")
+				.addAsResource("org/apache/xerces/impl/msg/XMLMessages.properties")
+				.addAsResource("org/activiti/db/mapping/mappings.xml")
+				.addAsResource("org/activiti/db/create/activiti.h2.create.engine.sql")
+				.addAsResource("org/activiti/db/create/activiti.h2.create.history.sql")
+				.addAsResource("org/activiti/db/create/activiti.h2.create.identity.sql")
+				.addAsManifestResource("META-INF/services/org.activiti.cdi.spi.ProcessEngineLookup",
+						"services/org.activiti.cdi.spi.ProcessEngineLookup");
 	}
 }
