@@ -14,7 +14,6 @@ package org.activiti.engine.impl.bpmn.behavior;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.activiti.bpmn.model.EndEvent;
@@ -23,7 +22,6 @@ import org.activiti.bpmn.model.TerminateEventDefinition;
 import org.activiti.engine.delegate.event.impl.ActivitiEventBuilder;
 import org.activiti.engine.impl.bpmn.helper.ScopeUtil;
 import org.activiti.engine.impl.context.Context;
-import org.activiti.engine.impl.interceptor.CommandContext;
 import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.activiti.engine.impl.pvm.delegate.ActivityExecution;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
@@ -63,11 +61,13 @@ public class TerminateEndEventActivityBehavior extends FlowNodeActivityBehavior 
     ActivityImpl terminateEndEventActivity = (ActivityImpl) execution.getActivity();
     
     if (terminateAll) {
-    	ActivityExecution processInstanceExecution = findProcessInstanceExecution(execution);
+    	ActivityExecution processInstanceExecution = findRootProcessInstanceExecution((ExecutionEntity) execution);
     	terminateProcessInstanceExecution(execution, terminateEndEventActivity, processInstanceExecution);
     } else {
     	ActivityExecution scopeExecution = ScopeUtil.findScopeExecution(execution);
-    	terminateExecution(execution, terminateEndEventActivity, scopeExecution);
+    	if (scopeExecution != null) {
+    		terminateExecution(execution, terminateEndEventActivity, scopeExecution);
+    	} 
     }
     
   }
@@ -83,6 +83,20 @@ public class TerminateEndEventActivityBehavior extends FlowNodeActivityBehavior 
   		currentExecution = currentExecution.getParent();
   	}
   	return currentExecution;
+  }
+  
+  
+  protected ActivityExecution findRootProcessInstanceExecution(ExecutionEntity execution) {
+    ExecutionEntity currentExecution = execution;
+    while (currentExecution.getParentId() != null || currentExecution.getSuperExecutionId() != null) {
+      ExecutionEntity parentExecution = currentExecution.getParent();
+      if (parentExecution != null) {
+        currentExecution = parentExecution;
+      } else if (currentExecution.getSuperExecutionId() != null) {
+        currentExecution = currentExecution.getSuperExecution();
+      }
+    }
+    return currentExecution;
   }
 
   protected void terminateExecution(ActivityExecution execution, ActivityImpl terminateEndEventActivity, ActivityExecution scopeExecution) {
@@ -102,10 +116,10 @@ public class TerminateEndEventActivityBehavior extends FlowNodeActivityBehavior 
   
   protected void terminateProcessInstanceExecution(ActivityExecution execution, ActivityImpl terminateEndEventActivity, ActivityExecution processInstanceExecution) {
     sendCancelledEvent( execution, terminateEndEventActivity, processInstanceExecution);
-    deleteProcessInstance((ExecutionEntity) processInstanceExecution, "terminate end event (" + terminateEndEventActivity.getId() + ")");
+    deleteProcessInstance((ExecutionEntity) processInstanceExecution, execution, "terminate end event (" + terminateEndEventActivity.getId() + ")");
   }
   
-  protected void deleteProcessInstance(ExecutionEntity processInstanceExecution, String deleteReason) {
+  protected void deleteProcessInstance(ExecutionEntity processInstanceExecution, ActivityExecution execution, String deleteReason) {
   	
     List<ExecutionEntity> orderedExecutions = orderExecutionsRootToLeaf(processInstanceExecution);
     Collections.reverse(orderedExecutions);
@@ -119,6 +133,7 @@ public class TerminateEndEventActivityBehavior extends FlowNodeActivityBehavior 
     	executionToDelete.remove();
     }
     
+    Context.getCommandContext().getHistoryManager().recordProcessInstanceEnd(processInstanceExecution.getId(), deleteReason, execution.getActivity().getId());
   }
   
   protected List<ExecutionEntity> orderExecutionsRootToLeaf(ExecutionEntity execution) {

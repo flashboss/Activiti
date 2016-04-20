@@ -56,8 +56,17 @@ public interface ProcessInstanceQuery extends Query<ProcessInstanceQuery, Proces
 	 */
   ProcessInstanceQuery processInstanceWithoutTenantId();
 
+  /** Only select process instances whose process definition category is processDefinitionCategory. */
+  ProcessInstanceQuery processDefinitionCategory(String processDefinitionCategory);
+
   /** Select process instances whose process definition name is processDefinitionName*/
   ProcessInstanceQuery processDefinitionName(String processDefinitionName);
+
+  /**
+   * Only select process instances with a certain process definition version.
+   * Particulary useful when used in combination with {@link #processDefinitionKey(String)}
+   */
+  ProcessInstanceQuery processDefinitionVersion(Integer processDefinitionVersion);
 
   /**
    * Select the process instances which are defined by a process definition with
@@ -257,9 +266,24 @@ public interface ProcessInstanceQuery extends Query<ProcessInstanceQuery, Proces
   ProcessInstanceQuery processInstanceNameLikeIgnoreCase(String nameLikeIgnoreCase);
   
   /**
+   * Localize process name and description to specified locale.
+   */
+  ProcessInstanceQuery locale(String locale);
+  
+  /**
+   * Instruct localization to fallback to more general locales including the default locale of the JVM if the specified locale is not found. 
+   */
+  ProcessInstanceQuery withLocalizationFallback();
+  
+  /**
    * Include process variables in the process query result
    */
   ProcessInstanceQuery includeProcessVariables();
+  
+  /**
+   * Only select process instances that failed due to an exception happening during a job execution.
+   */
+  ProcessInstanceQuery withJobException();
   
   /**
    * Begin an OR statement. Make sure you invoke the endOr method at the end of your OR statement.

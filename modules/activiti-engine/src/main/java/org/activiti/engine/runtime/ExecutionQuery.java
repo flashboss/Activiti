@@ -36,8 +36,17 @@ public interface ExecutionQuery extends Query<ExecutionQuery, Execution>{
   /** Only select executions which have the given process definition id. **/
   ExecutionQuery processDefinitionId(String processDefinitionId);
 
+  /** Only select executions which have the given process definition category. */
+  ExecutionQuery processDefinitionCategory(String processDefinitionCategory);
+
   /** Only select executions which have the given process definition name. */
   ExecutionQuery processDefinitionName(String processDefinitionName);
+
+  /**
+   * Only select executions which have the given process definition version.
+   * Particulary useful when used in combination with {@link #processDefinitionKey(String)}
+  */
+  ExecutionQuery processDefinitionVersion(Integer processDefinitionVersion);
 
   /** Only select executions which have the given process instance id. **/
   ExecutionQuery processInstanceId(String processInstanceId);
@@ -289,6 +298,16 @@ public interface ExecutionQuery extends Query<ExecutionQuery, Execution>{
    * @param messageName the name of the message the execution has subscribed to
    */
   ExecutionQuery messageEventSubscriptionName(String messageName);
+  
+  /**
+   * Localize execution name and description to specified locale.
+   */
+  ExecutionQuery locale(String locale);
+  
+  /**
+   * Instruct localization to fallback to more general locales including the default locale of the JVM if the specified locale is not found. 
+   */
+  ExecutionQuery withLocalizationFallback();
   
   //ordering //////////////////////////////////////////////////////////////
   

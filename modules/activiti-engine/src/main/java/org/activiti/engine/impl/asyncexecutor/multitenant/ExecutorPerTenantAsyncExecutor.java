@@ -15,6 +15,7 @@ package org.activiti.engine.impl.asyncexecutor.multitenant;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.activiti.engine.impl.asyncexecutor.AsyncExecutor;
 import org.activiti.engine.impl.asyncexecutor.DefaultAsyncJobExecutor;
@@ -51,6 +52,11 @@ public class ExecutorPerTenantAsyncExecutor implements TenantAwareAsyncExecutor 
     this.tenantInfoHolder = tenantInfoHolder;
     this.tenantAwareAyncExecutorFactory = tenantAwareAyncExecutorFactory;
   }
+  
+  @Override
+  public Set<String> getTenantIds() {
+    return tenantExecutors.keySet();
+  }
 
   public void addTenantAsyncExecutor(String tenantId, boolean startExecutor) {
     AsyncExecutor tenantExecutor = null;
@@ -77,12 +83,18 @@ public class ExecutorPerTenantAsyncExecutor implements TenantAwareAsyncExecutor 
     }
   }
   
+  @Override
+  public void removeTenantAsyncExecutor(String tenantId) {
+    shutdownTenantExecutor(tenantId);
+    tenantExecutors.remove(tenantId);
+  }
+  
   protected AsyncExecutor determineAsyncExecutor() {
     return tenantExecutors.get(tenantInfoHolder.getCurrentTenantId());
   }
 
-  public void executeAsyncJob(JobEntity job) {
-    determineAsyncExecutor().executeAsyncJob(job);
+  public boolean executeAsyncJob(JobEntity job) {
+    return determineAsyncExecutor().executeAsyncJob(job);
   }
 
   public void setCommandExecutor(CommandExecutor commandExecutor) {
@@ -118,10 +130,14 @@ public class ExecutorPerTenantAsyncExecutor implements TenantAwareAsyncExecutor 
 
   public synchronized void shutdown() {
     for (String tenantId : tenantExecutors.keySet()) {
-      logger.info("Shutting down async executor for tenant " + tenantId);
-      tenantExecutors.get(tenantId).shutdown();
+      shutdownTenantExecutor(tenantId);
     }
     active = false;
+  }
+
+  protected void shutdownTenantExecutor(String tenantId) {
+    logger.info("Shutting down async executor for tenant " + tenantId);
+    tenantExecutors.get(tenantId).shutdown();
   }
 
   public String getLockOwner() {
@@ -165,6 +181,18 @@ public class ExecutorPerTenantAsyncExecutor implements TenantAwareAsyncExecutor 
   public void setDefaultAsyncJobAcquireWaitTimeInMillis(int waitTimeInMillis) {
     for (AsyncExecutor asyncExecutor : tenantExecutors.values()) {
       asyncExecutor.setDefaultAsyncJobAcquireWaitTimeInMillis(waitTimeInMillis);
+    }
+  }
+  
+  @Override
+  public int getDefaultQueueSizeFullWaitTimeInMillis() {
+    return determineAsyncExecutor().getDefaultQueueSizeFullWaitTimeInMillis();
+  }
+  
+  @Override
+  public void setDefaultQueueSizeFullWaitTimeInMillis(int defaultQueueSizeFullWaitTime) {
+    for (AsyncExecutor asyncExecutor : tenantExecutors.values()) {
+      asyncExecutor.setDefaultQueueSizeFullWaitTimeInMillis(defaultQueueSizeFullWaitTime);
     }
   }
 
