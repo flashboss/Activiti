@@ -255,6 +255,8 @@ public abstract class CdiActivitiTestCase {
 				.addAsResource("org/activiti/db/create/activiti.h2.create.engine.sql")
 				.addAsResource("org/activiti/db/create/activiti.h2.create.history.sql")
 				.addAsResource("org/activiti/db/create/activiti.h2.create.identity.sql")
+				.addAsResource("META-INF/spring.schemas")
+				.addAsResource("org/springframework/beans/factory/xml/spring-beans-4.1.xsd")
 				.addAsManifestResource("META-INF/services/org.activiti.cdi.spi.ProcessEngineLookup",
 						"services/org.activiti.cdi.spi.ProcessEngineLookup");
 	}

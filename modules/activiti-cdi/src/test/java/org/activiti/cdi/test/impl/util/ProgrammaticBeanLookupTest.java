@@ -11,8 +11,6 @@ import static org.junit.Assert.assertTrue;
 import javax.enterprise.inject.Alternative;
 import javax.inject.Named;
 
-import org.activiti.cdi.impl.util.ActivitiServices;
-import org.activiti.cdi.impl.util.ProgrammaticBeanLookup;
 import org.activiti.cdi.test.impl.beans.SpecializedTestBean;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -39,23 +37,20 @@ public class ProgrammaticBeanLookupTest {
 
 	@Deployment(name = "normal", managed = false)
 	public static JavaArchive createDeployment() {
-		return completeDependencies(create(JavaArchive.class)).addClass(ProgrammaticBeanLookup.class)
-				.addClass(ActivitiServices.class);
-				//.addAsManifestResource("org/activiti/cdi/test/impl/util/beans.xml", "beans.xml");
+		return completeDependencies(create(JavaArchive.class)).deleteClass(SpecializedTestBean.class)
+				.addAsManifestResource("org/activiti/cdi/test/impl/util/beans.xml", "beans.xml");
 	}
 
 	@Deployment(name = "withAlternative", managed = false)
 	public static JavaArchive createDeploymentWithAlternative() {
-		return completeDependencies(create(JavaArchive.class)).addClass(ProgrammaticBeanLookup.class)
-				.addClass(ActivitiServices.class).addClass(AlternativeTestBean.class);
-				//.addAsManifestResource("org/activiti/cdi/test/impl/util/beansWithAlternative.xml", "beans.xml");
+		return completeDependencies(create(JavaArchive.class))
+				.addAsManifestResource("org/activiti/cdi/test/impl/util/beansWithAlternative.xml", "beans.xml");
 	}
 
 	@Deployment(name = "withSpecialization", managed = false)
 	public static JavaArchive createDeploymentWithSpecialization() {
-		return completeDependencies(create(JavaArchive.class)).addClass(ProgrammaticBeanLookup.class)
-				.addClass(ActivitiServices.class).addClass(SpecializedTestBean.class);
-				//.addAsManifestResource("org/activiti/cdi/test/impl/util/beans.xml", "beans.xml");
+		return completeDependencies(create(JavaArchive.class))
+				.addAsManifestResource("org/activiti/cdi/test/impl/util/beans.xml", "beans.xml");
 	}
 
 	@Test
